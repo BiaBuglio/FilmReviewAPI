@@ -138,4 +138,18 @@ router.put(
   }
 );
 
+router.get('/profile/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const userInfo = await db.getPublicUserInfo(username);
+    if (!userInfo) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+    res.json(userInfo);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+});
+
 module.exports = router;

@@ -112,9 +112,6 @@ paths:
         '500':
           description: Erro no servidor
 
-          paths:
-          
-  /auth/{id}:
     put:
       summary: Atualizar informações do usuário (todos os campos opcionais)
       parameters:
