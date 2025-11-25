@@ -25,11 +25,19 @@
                   },
                   "password": {
                     "type": "string"
+                  },
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
                   }
                 },
                 "required": [
                   "username",
-                  "password"
+                  "password",
+                  "fullName",
+                  "email"
                 ]
               }
             }
@@ -88,6 +96,157 @@
           },
           "400": {
             "description": "Credenciais inválidas"
+          }
+        }
+      }
+    },
+    "/auth/{id}": {
+      "delete": {
+        "summary": "Excluir usuário",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário excluído com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Usuário removido"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado"
+          },
+          "500": {
+            "description": "Erro no servidor"
+          }
+        }
+      },
+      "put": {
+        "summary": "Atualizar informações do usuário (todos os campos opcionais)",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID do usuário a ser atualizado"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string",
+                    "example": "Usuário da Silva"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "usuario123@user.com"
+                  },
+                  "photo": {
+                    "type": "string",
+                    "example": "profile-123.jpg"
+                  },
+                  "pronouns": {
+                    "type": "string",
+                    "example": "ele/dele"
+                  },
+                  "bio": {
+                    "type": "string",
+                    "example": "Sou apaixonado por cinema."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil atualizado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Perfil atualizado com sucesso"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro na validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "msg": {
+                            "type": "string",
+                            "example": "Biografia deve ter até 100 caracteres"
+                          },
+                          "param": {
+                            "type": "string",
+                            "example": "bio"
+                          },
+                          "location": {
+                            "type": "string",
+                            "example": "body"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Usuário não encontrado"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -176,16 +335,16 @@
     },
     "/reviews": {
       "get": {
-        "summary": "Buscar reviews pelo ID do filme",
+        "summary": "Buscar reviews pelo nome do filme",
         "parameters": [
           {
             "in": "query",
-            "name": "movieId",
+            "name": "name",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "string"
             },
-            "description": "ID do filme"
+            "description": "Nome do filme"
           }
         ],
         "responses": {
@@ -222,7 +381,7 @@
             }
           },
           "400": {
-            "description": "Parâmetro movieId obrigatório"
+            "description": "Parâmetro name obrigatório"
           }
         }
       },
@@ -264,6 +423,45 @@
           },
           "400": {
             "description": "Erro na validação"
+          }
+        }
+      }
+    },
+    "/reviews/{id}": {
+      "delete": {
+        "summary": "Excluir review",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review excluída com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Review removida"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Review não encontrada"
+          },
+          "500": {
+            "description": "Erro no servidor"
           }
         }
       }

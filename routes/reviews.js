@@ -32,19 +32,54 @@ router.post(
   }
 );
 
-// Buscar reviews de um filme específico pelo ID do filme (query param movieId)
+// Buscar reviews pelo nome do filme
 router.get('/', async (req, res) => {
-  const { movieId } = req.query;
+  const { name } = req.query;
 
-  if (!movieId) {
-    return res.status(400).json({ message: 'Parâmetro "movieId" obrigatório' });
+  if (!name) {
+    return res.status(400).json({ message: 'Parâmetro "name" obrigatório' });
   }
 
   try {
-    const reviews = await db.getReviewsByMovie(movieId);
-    res.json(reviews);
+    const movies = await db.searchMoviesByName(name);
+
+    if (!movies || movies.length === 0) {
+      return res.status(404).json({ message: 'Filme não encontrado' });
+    }
+
+    const movie = movies[0];
+
+    const reviews = await db.getReviewsByMovie(movie.id);
+
+    res.json({
+      movie: {
+        id: movie.id,
+        name: movie.name,
+        photo: movie.photo,
+        totalReviews: reviews.length
+      },
+      reviews
+    });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+});
+
+// Excluir avaliação
+router.delete('/:id', async (req, res) => {
+  const reviewId = req.params.id;
+
+  try {
+    const changes = await db.deleteReview(reviewId);
+
+    if (changes === 0) {
+      return res.status(404).json({ message: 'Avaliação não encontrada' });
+    }
+
+    res.json({ message: 'Avaliação excluída com sucesso' });
+  } catch (err) {
+    console.error('Erro ao excluir avaliação:', err);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 });

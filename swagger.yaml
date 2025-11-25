@@ -2,13 +2,20 @@ openapi: 3.0.0
 info:
   title: FilmReview API
   version: 1.0.0
+
 servers:
   - url: http://localhost:4000/api
+
 paths:
+
+  # --------------------
+  # AUTH
+  # --------------------
   /auth/register:
     post:
       summary: Registrar novo usuário
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -20,15 +27,34 @@ paths:
                 password:
                   type: string
                   example: senhaSegura
+                fullName:
+                  type: string
+                  example: Usuário da Silva
+                email:
+                  type: string
+                  example: usuario123@user.com
               required:
                 - username
                 - password
-        required: true
+                - fullName
+                - email
       responses:
         '201':
           description: Usuário criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  username:
+                    type: string
+                    example: usuario123
         '400':
           description: Erro na validação
+
   /auth/login:
     post:
       summary: Login do usuário
@@ -58,9 +84,115 @@ paths:
                 properties:
                   token:
                     type: string
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         '400':
           description: Credenciais inválidas
+
+  /auth/{id}:
+    delete:
+      summary: Excluir usuário
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuário excluído com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Usuário removido
+        '404':
+          description: Usuário não encontrado
+        '500':
+          description: Erro no servidor
+
+          paths:
+          
+  /auth/{id}:
+    put:
+      summary: Atualizar informações do usuário (todos os campos opcionais)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID do usuário a ser atualizado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  example: Usuário da Silva
+                email:
+                  type: string
+                  example: usuario123@user.com
+                photo:
+                  type: string
+                  example: profile-123.jpg
+                pronouns:
+                  type: string
+                  example: ele/dele
+                bio:
+                  type: string
+                  example: Sou apaixonado por cinema.
+              # Todos os campos são opcionais
+      responses:
+        '200':
+          description: Perfil atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Perfil atualizado com sucesso
+        '400':
+          description: Erro na validação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        msg:
+                          type: string
+                          example: Biografia deve ter até 100 caracteres
+                        param:
+                          type: string
+                          example: bio
+                        location:
+                          type: string
+                          example: body
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Usuário não encontrado
+
+  # --------------------
+  # MOVIES
+  # --------------------
   /movies:
     get:
       summary: Buscar filmes pelo nome
@@ -71,10 +203,9 @@ paths:
           schema:
             type: string
           example: Matrix
-          description: Nome do filme para busca
       responses:
         '200':
-          description: Lista de filmes e contagem de reviews
+          description: Lista de filmes encontrados
           content:
             application/json:
               schema:
@@ -84,18 +215,15 @@ paths:
                   properties:
                     id:
                       type: integer
-                      example: 1
                     name:
                       type: string
-                      example: Matrix
                     photo:
                       type: string
-                      example: photo-1234.jpg
                     reviewCount:
                       type: integer
-                      example: 5
         '400':
           description: Parâmetro name obrigatório
+
     post:
       summary: Criar novo filme
       requestBody:
@@ -107,7 +235,6 @@ paths:
               properties:
                 name:
                   type: string
-                  example: Matrix
                 photo:
                   type: string
                   format: binary
@@ -119,46 +246,26 @@ paths:
           description: Filme criado com sucesso
         '400':
           description: Erro na validação
+
+  # --------------------
+  # REVIEWS
+  # --------------------
   /reviews:
     get:
-      summary: Buscar reviews pelo ID do filme
+      summary: Buscar reviews pelo nome do filme
       parameters:
         - in: query
-          name: movieId
+          name: name
           required: true
           schema:
-            type: integer
-          example: 1
-          description: ID do filme
+            type: string
+          example: Matrix
       responses:
         '200':
           description: Lista de reviews do filme
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                      example: 100
-                    username:
-                      type: string
-                      example: usuario123
-                    rating:
-                      type: number
-                      format: float
-                      example: 4.5
-                    reviewText:
-                      type: string
-                      example: Filme muito bom e emocionante.
-                    createdAt:
-                      type: string
-                      format: date-time
-                      example: '2024-06-01T12:34:56Z'
         '400':
-          description: Parâmetro movieId obrigatório
+          description: Parâmetro name obrigatório
+
     post:
       summary: Criar nova review
       requestBody:
@@ -170,10 +277,8 @@ paths:
               properties:
                 userId:
                   type: integer
-                  example: 10
                 movieId:
                   type: integer
-                  example: 1
                 rating:
                   type: number
                   example: 4.5
@@ -190,3 +295,28 @@ paths:
           description: Review criada com sucesso
         '400':
           description: Erro na validação
+
+  /reviews/{id}:
+    delete:
+      summary: Excluir review
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Review excluída com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Review removida
+        '404':
+          description: Review não encontrada
+        '500':
+          description: Erro no servidor
